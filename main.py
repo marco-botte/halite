@@ -1,10 +1,8 @@
-from kaggle_environments import make
+from src.run import run_single_game
 
 
 def main():
-    env = make("halite", debug=True)
-    env.render()
-    env.run(["src/agents/random_agent.py", "random"])
+    run_single_game()
 
 
 if __name__ == "__main__":

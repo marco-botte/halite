@@ -1,1 +1,1 @@
-HALITE BOT TE
+Halite Bot TE
