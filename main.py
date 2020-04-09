@@ -1,9 +1,13 @@
 import argparse
 
 from src.run import run_evaluate, run_single_game
+from src.utils import RunCommand
 
 
 def main(args):
+    if args.cmd not in list(map(lambda x: x.value, RunCommand)):
+        raise KeyError
+
     if args.cmd == "single":
         run_single_game()
 
