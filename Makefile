@@ -6,6 +6,10 @@ init:
 run:
 	pipenv run python main.py
 
+.PHONY: test
+test:
+	make lint unit_test
+
 .PHONY: unit_test
 unit_test:
 	pipenv run pytest tests/unit_tests 
