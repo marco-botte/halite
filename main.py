@@ -1,6 +1,6 @@
 import argparse
 
-from src.run import run_single_game, run_evaluate
+from src.run import run_evaluate, run_single_game
 
 
 def main(args):
