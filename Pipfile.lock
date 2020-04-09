@@ -1,0 +1,27 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "fc7b03f7b52aaff69575ed325813ec52077760d71699842cad587d2b196650e3"
+        },
+        "pipfile-spec": 6,
+        "requires": {
+            "python_version": "3.7"
+        },
+        "sources": [
+            {
+                "black": "*",
+                "flake8": "*",
+                "isort": "*",
+                "kaggle_environments": "*",
+                "mypy": "*",
+                "name": "pypi",
+                "pylint": "*",
+                "pytest": "*",
+                "url": "https://pypi.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {},
+    "develop": {}
+}
