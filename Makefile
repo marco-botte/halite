@@ -2,10 +2,6 @@
 init:
 	pipenv install
 
-.PHONY: run
-run:
-	pipenv run python main.py
-
 .PHONY: test
 test:
 	make lint unit_test
@@ -45,3 +41,11 @@ sort_import:
 .PHONY: sort_import_check
 sort_import_check:
 	pipenv run isort -rc . -c
+
+.PHONY: run_single
+run_single:
+	pipenv run python main.py single
+
+.PHONY: run_eval
+run_eval:
+	pipenv run python main.py eval
