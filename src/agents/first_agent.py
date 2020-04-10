@@ -71,7 +71,7 @@ class Ship:
 
     def set_task(self, task):
         if task not in Task:
-            raise ValueError
+            raise TypeError
         self.task = task
 
     def __str__(self):
@@ -103,6 +103,9 @@ class Shipyard:
             f"is {'not ' if not self.occupied else ''}occupied"
         )
 
+    def __eq__(self, other):
+        return self.pos == other.pos
+
     def set_occupied(self):
         self.occupied = True
 
@@ -119,6 +122,8 @@ class Player:
 
     def add_shipyard(self, name, pos):
         self.shipyards[name] = Shipyard(name, pos)
+        print(name, pos)
+        print(self.shipyards)
         self.halite -= 2000
 
     def add_ship(self, name, props):

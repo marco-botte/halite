@@ -1,7 +1,8 @@
 from unittest.mock import Mock
 
 import pytest
-from src.agents.first_agent import SIZE, Position, first_agent
+
+from src.agents.first_agent import SIZE, Move, Player, Position, Ship, Shipyard, Task, first_agent
 
 
 def test_first_agent():
@@ -47,3 +48,35 @@ def test_get_adjacent_positions_border_bottom_left():
         Position(bottom_left_val + 1),
         Position(SIZE ** 2 - 1),
     ]
+
+
+def test_ship_move():
+    ship = Ship("GorchFock", [42, 10])
+
+    ship.move(Move.NORTH)
+
+    assert ship.pos == Position(42 - SIZE)
+    assert ship.halite == 9
+
+
+def test_ship_task():
+    ship = Ship("GorchFock", [42, 10])
+
+    ship.set_task(Task.DROPOFF)
+
+    assert ship.task == Task.DROPOFF
+
+
+def test_ship_task_raises():
+    ship = Ship("GorchFock", [42, 10])
+
+    with pytest.raises(TypeError):
+        ship.set_task("vdL")
+
+
+def test_player_add_shipyard():
+    player = Player()
+    player.add_shipyard("Hamburg", 13)
+
+    assert player.halite == 3000
+    assert player.shipyards == {"Hamburg": Shipyard("Hamburg", 13)}
