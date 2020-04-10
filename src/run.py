@@ -6,7 +6,7 @@ from .utils import won_game_percentage
 def run_single_game():
     env = make("halite", debug=True)
     env.render()
-    env.run(["src/agents/first_agent.py", "random"])
+    env.run(["src/agents/first_agent.py", None])
 
 
 def run_evaluate():
