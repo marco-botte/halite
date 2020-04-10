@@ -35,4 +35,4 @@ class Position:
         else:
             moves_in_borders.append(Position(moves[3]))
 
-        return moves_in_borders
+        return moves_in_borders + [self]

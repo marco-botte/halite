@@ -13,7 +13,7 @@ def test_get_adjacent_positions():
     source_pos = Position(50)
     adjacent = source_pos.get_adjacent_positions()
 
-    assert adjacent == [Position(35), Position(65), Position(49), Position(51)]
+    assert adjacent == [Position(35), Position(65), Position(49), Position(51), source_pos]
 
 
 def test_get_adjacent_positions_border_top_right():
@@ -25,6 +25,7 @@ def test_get_adjacent_positions_border_top_right():
         Position(2 * SIZE - 1),
         Position(SIZE - 2),
         Position(0),
+        source_pos,
     ]
 
 
@@ -38,4 +39,5 @@ def test_get_adjacent_positions_border_bottom_left():
         Position(0),
         Position(SIZE ** 2 - 1),
         Position(bottom_left_val + 1),
+        source_pos,
     ]
