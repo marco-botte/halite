@@ -5,7 +5,7 @@ from src.agents.first_agent import SIZE, Position, first_agent
 
 
 def test_first_agent():
-    obs_mock = Mock(player=0, players={0: [0, {"shipyard": 118}, {"ship": 116}]})
+    obs_mock = Mock(player=0, players={0: [0, {"shipyard": 118}, {"ship": [116, 0]}]})
 
     action = first_agent(obs_mock)
 

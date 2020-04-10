@@ -41,23 +41,21 @@ class Position:
         return self.value == other.value
 
     def get_adjacent_position(self, move):
-        if move == Move.NORTH or move == Move.SOUTH:
+        if move in (Move.NORTH, Move.SOUTH):
             return Position((self.value + MOVE_TO_DELTA[move]) % (SIZE ** 2))
-        elif move == Move.EAST:
+        if move == Move.EAST:
             target = self.value + MOVE_TO_DELTA[move]
             if target % SIZE == 0:
                 return Position(target - SIZE)
-            else:
-                return Position(target)
-        elif move == Move.WEST:
-            target = self.value + MOVE_TO_DELTA[move]
-            if target % SIZE == (SIZE - 1):
-                return Position(target + SIZE)
-            else:
-                return Position(target)
+            return Position(target)
+
+        target = self.value + MOVE_TO_DELTA[move]
+        if target % SIZE == (SIZE - 1):
+            return Position(target + SIZE)
+        return Position(target)
 
     def get_all_adjacent_positions(self):
-        return list(map(lambda x: self.get_adjacent_position(x), Move))
+        return list(map(self.get_adjacent_position, Move))
 
 
 class Ship:
@@ -94,10 +92,16 @@ class Shipyard:
         self.occupied = False
 
     def __str__(self):
-        return f"Shipyard: {self.name},\tpos: {self.pos},\tis {'not ' if self.occupied ==False else ''}occupied"
+        return (
+            f"Shipyard: {self.name},\tpos: {self.pos},\t"
+            f"is {'not ' if not self.occupied else ''}occupied"
+        )
 
     def __repr__(self):
-        return f"Shipyard: {self.name},\tpos: {self.pos},\tis {'not ' if self.occupied ==False else ''}occupied"
+        return (
+            f"Shipyard: {self.name},\tpos: {self.pos},\t"
+            f"is {'not ' if not self.occupied else ''}occupied"
+        )
 
     def set_occupied(self):
         self.occupied = True
@@ -147,7 +151,7 @@ class Player:
         return list(map(lambda x: (x.name, x.pos.value), self.ships.values()))
 
     def crash_test(self):
-        occupied = PLAYER.all_ship_positions()
+        occupied = self.all_ship_positions()
         if len(set(occupied)) < len(occupied):
             return True
         return False
