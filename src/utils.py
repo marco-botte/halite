@@ -1,5 +1,7 @@
 from enum import Enum
 
+SIZE = 15
+
 
 class RunCommand(Enum):
     SINGLE = "single"

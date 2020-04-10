@@ -8,5 +8,5 @@ def test_first_agent():
 
     action = random_agent(obs_mock)
 
-    assert action.get("ship") is not None
+    assert action.get("ship", "no_ship") != "no_ship"
     assert action["ship"] in ["NORTH", "SOUTH", "EAST", "WEST", None]
