@@ -77,6 +77,9 @@ class Ship:
             f"Ship(name={self.name}, pos={self.pos}, task={self.task_queue}, halite={self.halite}"
         )
 
+    def __eq__(self, other):
+        return self.name == other.name
+
 
 class Shipyard:
     def __init__(self, name, pos):

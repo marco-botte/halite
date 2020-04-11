@@ -82,7 +82,43 @@ def test_ship_task():
 
 def test_player_add_shipyard():
     player = Player()
-    player.add_shipyard("Hamburg", 13)
+    player.add_shipyard("Hamburg", Position(1, 1))
 
     assert player.halite == 3000
-    assert player.shipyards == {"Hamburg": Shipyard("Hamburg", 13)}
+    assert player.shipyards == {"Hamburg": Shipyard("Hamburg", Position(1, 1))}
+
+
+def test_player_add_ship():
+    player = Player()
+    player.add_ship("Santa Maria", Position(1, 2))
+
+    assert player.halite == 4500
+    assert player.ships == {"Santa Maria": Ship("Santa Maria", Position(1, 2))}
+
+
+def test_player_remove_ship():
+    player = Player()
+    player.ships["Santa Maria"] = Ship("Santa Maria", Position(1, 2))
+
+    player.remove_ship("Santa Maria")
+
+    assert player.ships == {}
+
+
+def test_player_convert_ship():
+    player = Player()
+    player.add_ship("Santa Maria", Position(1, 2))
+    player.convert_ship("Santa Maria", "Cuba")
+
+    assert player.halite == 2500
+    assert player.ships == {}
+    assert player.shipyards == {"Cuba": Shipyard("Cuba", Position(1, 2))}
+
+
+def test_player_spawn_ship():
+    player = Player()
+    player.add_shipyard("Hamburg", Position(1, 2))
+    player.spawn_ship("Hamburg", "Gorch Fock")
+
+    assert player.halite == 2500
+    assert player.ships == {"Gorch Fock": Ship("Gorch Fock", Position(1, 2))}
