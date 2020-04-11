@@ -1,77 +1,83 @@
+from queue import Queue
 from unittest.mock import Mock
 
-import pytest
+from src.agents.first_agent import (
+    SIZE,
+    Move,
+    Player,
+    Position,
+    Ship,
+    Shipyard,
+    board_pos_to_position,
+    first_agent,
+)
 
-from src.agents.first_agent import SIZE, Move, Player, Position, Ship, Shipyard, Task, first_agent
+
+def test_board_pos_to_position():
+    assert board_pos_to_position(37) == Position(2, 7)
 
 
 def test_first_agent():
-    obs_mock = Mock(player=0, players={0: [0, {"shipyard": 118}, {"ship": [116, 0]}]})
+    obs_mock = Mock(
+        player=0,
+        players={0: [0, {"shipyard": 118}, {"ship": [116, 0]}]},
+        halite=list(range(SIZE ** 2)),
+    )
 
     action = first_agent(obs_mock)
 
     assert action == dict() or action["ship"] in ["NORTH", "SOUTH", "EAST", "WEST"]
 
 
-def test_position_raises_on_invalid_init():
-    with pytest.raises(ValueError):
-        Position(SIZE ** 2 + 1)
-
-
-def test_get_adjacent_positions():
-    source_pos = Position(50)
+def test_get_all_adjacent_positions():
+    source_pos = Position(4, 5)
     adjacent = source_pos.get_all_adjacent_positions()
 
-    assert adjacent == [Position(35), Position(65), Position(51), Position(49)]
+    assert adjacent == [Position(3, 5), Position(5, 5), Position(4, 6), Position(4, 4)]
 
 
-def test_get_adjacent_positions_border_top_right():
-    source_pos = Position(SIZE - 1)
+def test_get_all_adjacent_positions_border_top_right():
+    source_pos = Position(0, SIZE - 1)
     adjacent = source_pos.get_all_adjacent_positions()
 
     assert adjacent == [
-        Position(SIZE ** 2 - 1),
-        Position(2 * SIZE - 1),
-        Position(0),
-        Position(SIZE - 2),
+        Position(SIZE - 1, SIZE - 1),
+        Position(1, SIZE - 1),
+        Position(0, 0),
+        Position(0, SIZE - 2),
     ]
 
 
-def test_get_adjacent_positions_border_bottom_left():
-    bottom_left_val = SIZE ** 2 - SIZE
-    source_pos = Position(bottom_left_val)
+def test_get_all_adjacent_positions_border_bottom_left():
+    source_pos = Position(SIZE - 1, 0)
     adjacent = source_pos.get_all_adjacent_positions()
 
     assert adjacent == [
-        Position(bottom_left_val - SIZE),
-        Position(0),
-        Position(bottom_left_val + 1),
-        Position(SIZE ** 2 - 1),
+        Position(SIZE - 2, 0),
+        Position(0, 0),
+        Position(SIZE - 1, 1),
+        Position(SIZE - 1, SIZE - 1),
     ]
 
 
 def test_ship_move():
-    ship = Ship("GorchFock", [42, 10])
+    ship = Ship("GorchFock", Position(2, 4))
+    ship.halite = 10
 
     ship.move(Move.NORTH)
 
-    assert ship.pos == Position(42 - SIZE)
+    assert ship.pos == Position(1, 4)
     assert ship.halite == 9
 
 
 def test_ship_task():
-    ship = Ship("GorchFock", [42, 10])
+    ship = Ship("GorchFock", Position(2, 4))
 
-    ship.set_task(Task.DROPOFF)
+    queue = Queue(maxsize=50)
+    queue.put(2)
+    ship.set_tasks(queue)
 
-    assert ship.task == Task.DROPOFF
-
-
-def test_ship_task_raises():
-    ship = Ship("GorchFock", [42, 10])
-
-    with pytest.raises(TypeError):
-        ship.set_task("vdL")
+    assert ship.task_queue == queue
 
 
 def test_player_add_shipyard():
