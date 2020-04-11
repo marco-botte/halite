@@ -1,5 +1,6 @@
 import logging
 from enum import Enum
+from queue import Queue
 from random import choice, random
 
 import numpy as np
@@ -54,7 +55,7 @@ class Ship:
     def __init__(self, name, pos):
         self.pos = pos
         self.name = name
-        self.task_queue = None
+        self.task_queue = Queue(maxsize=100)
         self.halite = 0
 
     def move(self, move):
@@ -66,6 +67,24 @@ class Ship:
 
     def set_tasks(self, queue):
         self.task_queue = queue
+
+    def navigate_to_pos(self, pos):
+        delta_x = self.pos.x - pos.x
+        delta_y = self.pos.y - pos.y
+
+        if delta_x > 0:
+            for _ in range(abs(delta_x)):
+                self.task_queue.put(Move.NORTH)
+        else:
+            for _ in range(abs(delta_x)):
+                self.task_queue.put(Move.SOUTH)
+
+        if delta_y < 0:
+            for _ in range(abs(delta_y)):
+                self.task_queue.put(Move.EAST)
+        else:
+            for _ in range(abs(delta_y)):
+                self.task_queue.put(Move.WEST)
 
     def __str__(self):
         return (
@@ -112,8 +131,6 @@ class Player:
 
     def add_shipyard(self, name, pos):
         self.shipyards[name] = Shipyard(name, pos)
-        print(name, pos)
-        print(self.shipyards)
         self.halite -= 2000
 
     def add_ship(self, name, pos):
@@ -140,6 +157,15 @@ class Player:
             shipyard.set_occupied()
         else:
             raise KeyError
+
+    def set_occupations(self):
+        occupied_positions = list(map(lambda x: x.pos, self.ships.values()))
+
+        for shipyard in self.shipyards.values():
+            if shipyard.pos not in occupied_positions:
+                shipyard.occupied = False
+            else:
+                shipyard.occupied = True
 
     def all_ship_positions(self):
         return list(map(lambda x: (x.name, x.pos), self.ships.values()))
@@ -192,17 +218,6 @@ def first_agent(obs):
         owned_halite -= 2000
         action_counter += 1
 
-    # spawn ship in random shipyard when no ship available
-    old_shipyards = list(filter(lambda x: x not in new_shipyard_names, PLAYER.shipyards))
-    if old_shipyards and owned_halite >= 500 and len(PLAYER.ships) == 0:
-        spawning_shipyard_name = choice(list(old_shipyards))
-        ship_name = f"{PLAYER.step+1}-{action_counter}"
-        new_ship_names.add(ship_name)
-        PLAYER.spawn_ship(spawning_shipyard_name, ship_name)
-        action_dict[spawning_shipyard_name] = "SPAWN"
-        owned_halite -= 500
-        action_counter += 1
-
     # choose action for each ship
     for ship_name, ship in PLAYER.ships.items():
         if ship_name in new_ship_names:
@@ -214,6 +229,23 @@ def first_agent(obs):
             ship.move(ship_move)
         else:  # collect
             ship.collect(board)
+
+    PLAYER.set_occupations()
+    # spawn ship in random shipyard when no ship in shipyard and no ship available
+    spawnable_shipyards = list(
+        filter(
+            lambda x: x.name not in new_shipyard_names and not x.occupied, PLAYER.shipyards.values()
+        )
+    )
+    if spawnable_shipyards and owned_halite >= 500 and len(PLAYER.ships) == 0:
+        spawning_shipyard_name = choice(list(spawnable_shipyards))
+        # only spawn when no ship in shipyard
+        ship_name = f"{PLAYER.step+1}-{action_counter}"
+        new_ship_names.add(ship_name)
+        PLAYER.spawn_ship(spawning_shipyard_name, ship_name)
+        action_dict[spawning_shipyard_name] = "SPAWN"
+        owned_halite -= 500
+        action_counter += 1
 
     logger.warning(f"Actions:\t {action_dict}")  # pylint: disable = W1202
     PLAYER.step += 1

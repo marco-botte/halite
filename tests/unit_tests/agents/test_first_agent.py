@@ -122,3 +122,19 @@ def test_player_spawn_ship():
 
     assert player.halite == 2500
     assert player.ships == {"Gorch Fock": Ship("Gorch Fock", Position(1, 2))}
+
+
+def test_player_set_occupations():
+    player = Player()
+    player.add_shipyard("Hamburg", Position(1, 2))
+    player.spawn_ship("Hamburg", "Gorch Fock")
+
+    player.set_occupations()
+
+    assert player.shipyards["Hamburg"].occupied is True
+
+    player.ships["Gorch Fock"].move(Move.NORTH)
+    print(player.ships)
+    player.set_occupations()
+
+    assert player.shipyards["Hamburg"].occupied is False
