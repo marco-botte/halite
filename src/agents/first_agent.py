@@ -194,6 +194,24 @@ class Player:
 PLAYER = Player()
 
 
+def find_halite_cluster(halite_matrix, cluster_size):
+    best_top_left_pos = Position(0, 0)
+    best_value = 0
+    for x_ind in range(halite_matrix.shape[0] - cluster_size + 1):
+        for y_ind in range(halite_matrix.shape[1] - cluster_size + 1):
+            submatrix = halite_matrix[
+                x_ind : (x_ind + cluster_size), y_ind : (y_ind + cluster_size)
+            ]
+            submatrix_value = sum(sum(submatrix))
+            if submatrix_value > best_value:
+                best_value = submatrix_value
+                best_top_left_pos = Position(x_ind, y_ind)
+
+    return Position(
+        best_top_left_pos.x + cluster_size // 2, best_top_left_pos.y + cluster_size // 2
+    )
+
+
 def initialize(obs):
     shipyards = obs["players"][obs["player"]][1]
     for name, board_pos in shipyards.items():
@@ -206,7 +224,6 @@ def initialize(obs):
 
 
 def first_agent(obs):
-    logger.warning(obs)
     logger.warning(f"step {obs['step']}, player {obs['players'][0]}")
     action_dict = {}
     owned_halite = obs["players"][0][0]

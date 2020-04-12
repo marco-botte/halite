@@ -1,3 +1,5 @@
+import numpy as np
+
 from src.agents.first_agent import (
     SIZE,
     Move,
@@ -6,6 +8,7 @@ from src.agents.first_agent import (
     Ship,
     Shipyard,
     board_pos_to_position,
+    find_halite_cluster,
     first_agent,
 )
 
@@ -166,3 +169,11 @@ def test_navigate_to_pos_over_border():
     for _ in range(10):
         ship.continue_task()
     assert ship.pos == target
+
+
+def test_find_halite_cluster():
+    halite_matrix = np.reshape(np.float32(list(range(16))), (4, 4))
+    print(halite_matrix)
+    cluster_center = find_halite_cluster(halite_matrix, 3)
+
+    assert cluster_center == Position(2, 2)
