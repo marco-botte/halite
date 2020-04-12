@@ -1,6 +1,6 @@
 import argparse
 
-from src.run import run_single_game
+from src.run import run_evaluate, run_example_obs, run_single_game
 from src.utils import RunCommand
 
 
@@ -10,6 +10,12 @@ def main(args):
 
     if args.cmd == "single":
         run_single_game()
+
+    if args.cmd == "eval":
+        run_evaluate()
+
+    if args.cmd == "example":
+        run_example_obs()
 
 
 if __name__ == "__main__":

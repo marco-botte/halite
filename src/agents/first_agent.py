@@ -195,21 +195,22 @@ PLAYER = Player()
 
 
 def initialize(obs):
-    shipyards = obs.players[obs.player][1]
+    shipyards = obs["players"][obs["player"]][1]
     for name, board_pos in shipyards.items():
         PLAYER.add_shipyard(name, board_pos_to_position(board_pos))
 
-    ships = obs.players[obs.player][2]
+    ships = obs["players"][obs["player"]][2]
     for name, props in ships.items():
         PLAYER.add_ship(name, board_pos_to_position(props[0]))
     logger.warning("Initialize finished")
 
 
 def first_agent(obs):
-    logger.warning(f"step {obs.step}, player {obs.players[0]}")
+    logger.warning(obs)
+    logger.warning(f"step {obs['step']}, player {obs['players'][0]}")
     action_dict = {}
-    owned_halite = obs.players[obs.player][0]
-    board = np.reshape(np.float32(obs.halite), (15, 15))
+    owned_halite = obs["players"][0][0]
+    board = np.reshape(np.float32(obs["halite"]), (15, 15))
     action_counter = 1
     new_ship_names = set()
     new_shipyard_names = set()
@@ -247,8 +248,12 @@ def first_agent(obs):
     PLAYER.set_occupations()
     # spawn ship in random shipyard when no ship in shipyard and no ship available
     spawnable_shipyards = list(
-        filter(
-            lambda x: x.name not in new_shipyard_names and not x.occupied, PLAYER.shipyards.values()
+        map(
+            lambda x: x.name,
+            filter(
+                lambda x: x.name not in new_shipyard_names and not x.occupied,
+                PLAYER.shipyards.values(),
+            ),
         )
     )
     if spawnable_shipyards and owned_halite >= 500 and len(PLAYER.ships) == 0:

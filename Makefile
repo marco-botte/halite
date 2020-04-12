@@ -49,3 +49,7 @@ run_single:
 .PHONY: run_eval
 run_eval:
 	pipenv run python main.py eval
+	
+.PHONY: run_ex
+run_ex:
+	pipenv run python main.py example

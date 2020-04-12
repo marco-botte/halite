@@ -1,5 +1,3 @@
-from unittest.mock import Mock
-
 from src.agents.first_agent import (
     SIZE,
     Move,
@@ -17,13 +15,14 @@ def test_board_pos_to_position():
 
 
 def test_first_agent():
-    obs_mock = Mock(
-        player=0,
-        players={0: [0, {"shipyard": 118}, {"ship": [116, 0]}]},
-        halite=list(range(SIZE ** 2)),
-    )
+    obs = {
+        "player": 0,
+        "step": 2,
+        "players": {0: [0, {"shipyard": 118}, {"ship": [116, 0]}]},
+        "halite": list(range(SIZE ** 2)),
+    }
 
-    action = first_agent(obs_mock)
+    action = first_agent(obs)
 
     assert action == dict() or action["ship"] in ["NORTH", "SOUTH", "EAST", "WEST"]
 
