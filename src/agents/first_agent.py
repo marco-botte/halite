@@ -1,6 +1,5 @@
 import logging
 from enum import Enum
-from queue import Queue
 from random import choice, random
 
 import numpy as np
@@ -55,7 +54,7 @@ class Ship:
     def __init__(self, name, pos):
         self.pos = pos
         self.name = name
-        self.task_queue = Queue(maxsize=100)
+        self.tasks = []
         self.halite = 0
 
     def move(self, move):
@@ -65,36 +64,51 @@ class Ship:
     def collect(self, board):
         self.halite += 0.25 * board[self.pos.x][self.pos.y]
 
-    def set_tasks(self, queue):
-        self.task_queue = queue
+    def add_task(self, task):
+        self.tasks.append(task)
+
+    def continue_task(self):  # for now assume tasks are only of type Move
+        if self.tasks:
+            task = self.tasks[0]
+            self.tasks = self.tasks[1:]
+            if task in Move:
+                self.move(task)
+                return task
+            raise TypeError
+        raise ValueError
 
     def navigate_to_pos(self, pos):
-        delta_x = self.pos.x - pos.x
-        delta_y = self.pos.y - pos.y
+        direct_x = self.pos.x - pos.x
+        border_x = (
+            (self.pos.x + SIZE - pos.x) if self.pos.x < pos.x else (self.pos.x - (pos.x + SIZE))
+        )
+        direct_y = self.pos.y - pos.y
+        border_y = (
+            (self.pos.y + SIZE - pos.y) if self.pos.y < pos.y else (self.pos.y - (pos.y + SIZE))
+        )
+
+        delta_x = direct_x if abs(direct_x) < abs(border_x) else border_x
+        delta_y = direct_y if abs(direct_y) < abs(border_y) else border_y
 
         if delta_x > 0:
             for _ in range(abs(delta_x)):
-                self.task_queue.put(Move.NORTH)
+                self.tasks.append(Move.NORTH)
         else:
             for _ in range(abs(delta_x)):
-                self.task_queue.put(Move.SOUTH)
+                self.tasks.append(Move.SOUTH)
 
         if delta_y < 0:
             for _ in range(abs(delta_y)):
-                self.task_queue.put(Move.EAST)
+                self.tasks.append(Move.EAST)
         else:
             for _ in range(abs(delta_y)):
-                self.task_queue.put(Move.WEST)
+                self.tasks.append(Move.WEST)
 
     def __str__(self):
-        return (
-            f"Ship(name={self.name}, pos={self.pos}, task={self.task_queue}, halite={self.halite}"
-        )
+        return f"Ship(name={self.name}, pos={self.pos}, task={self.tasks}, halite={self.halite}"
 
     def __repr__(self):
-        return (
-            f"Ship(name={self.name}, pos={self.pos}, task={self.task_queue}, halite={self.halite}"
-        )
+        return f"Ship(name={self.name}, pos={self.pos}, task={self.tasks}, halite={self.halite}"
 
     def __eq__(self, other):
         return self.name == other.name

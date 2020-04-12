@@ -1,4 +1,3 @@
-from queue import Queue
 from unittest.mock import Mock
 
 from src.agents.first_agent import (
@@ -70,14 +69,13 @@ def test_ship_move():
     assert ship.halite == 9
 
 
-def test_ship_task():
+def test_ship_add_task():
     ship = Ship("GorchFock", Position(2, 4))
 
-    queue = Queue(maxsize=50)
-    queue.put(2)
-    ship.set_tasks(queue)
+    task = Move.NORTH
+    ship.add_task(task)
 
-    assert ship.task_queue == queue
+    assert ship.tasks[0] == task
 
 
 def test_player_add_shipyard():
@@ -138,3 +136,34 @@ def test_player_set_occupations():
     player.set_occupations()
 
     assert player.shipyards["Hamburg"].occupied is False
+
+
+def test_continue_task():
+    ship = Ship("Titanic", Position(5, 5))
+
+    task1 = Move.NORTH
+    ship.add_task(task1)
+    ship.add_task(Move.SOUTH)
+
+    assert ship.continue_task() == task1
+
+
+def test_navigate_to_pos():
+    ship = Ship("Titanic", Position(5, 5))
+    target = Position(10, 3)
+
+    ship.navigate_to_pos(target)
+
+    assert ship.tasks == [Move.SOUTH] * 5 + [Move.WEST] * 2
+
+
+def test_navigate_to_pos_over_border():
+    ship = Ship("Titanic", Position(14, 5))
+    target = Position(3, 14)
+
+    ship.navigate_to_pos(target)
+    assert ship.tasks == [Move.SOUTH] * 4 + [Move.WEST] * 6
+
+    for _ in range(10):
+        ship.continue_task()
+    assert ship.pos == target
