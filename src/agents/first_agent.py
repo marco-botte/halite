@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import List, Tuple
+
 import logging
 from enum import Enum
 from random import choice, random
@@ -15,14 +19,11 @@ class Move(Enum):
     SOUTH = "SOUTH"
     EAST = "EAST"
     WEST = "WEST"
-
-
-def board_pos_to_position(pos):
-    return Position(pos // SIZE, pos % SIZE)
+    COLLECT = None
 
 
 class Position:
-    def __init__(self, x, y):
+    def __init__(self, x: int, y: int):
         self.x = x  # pylint: disable=C0103
         self.y = y  # pylint: disable=C0103
 
@@ -35,7 +36,7 @@ class Position:
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
 
-    def get_adjacent_position(self, move):
+    def get_adjacent_position(self, move: Move) -> Position:
         if move == Move.NORTH:
             return Position((self.x - 1) % SIZE, self.y)
         if move == Move.SOUTH:
@@ -44,40 +45,53 @@ class Position:
             return Position(self.x, (self.y + 1) % SIZE)
         if move == Move.WEST:
             return Position(self.x, (self.y - 1) % SIZE)
+        if move == Move.COLLECT:
+            return self
         raise TypeError
 
-    def get_all_adjacent_positions(self):
-        return list(map(self.get_adjacent_position, Move))
+    def get_all_adjacent_positions(self) -> List[Position]:
+        return list(
+            map(self.get_adjacent_position, [move for move in Move if move.value is not None])
+        )
+
+
+def board_pos_to_position(pos) -> Position:
+    return Position(pos // SIZE, pos % SIZE)
 
 
 class Ship:
-    def __init__(self, name, pos):
+    def __init__(self, name: str, pos: Position):
         self.pos = pos
         self.name = name
-        self.tasks = []
+        self.tasks: List[Move] = []
         self.halite = 0
 
-    def move(self, move):
+    def move(self, move: Move) -> None:
         self.pos = self.pos.get_adjacent_position(move)
-        self.halite *= 0.9
+        self.halite = int(self.halite * 0.9)
 
-    def collect(self, board):
-        self.halite += 0.25 * board[self.pos.x][self.pos.y]
+    def collect(self, board: np.ndarray) -> None:
+        self.halite += int(0.25 * board[self.pos.x][self.pos.y])
 
-    def add_task(self, task):
+    def add_task(self, task: Move) -> None:
         self.tasks.append(task)
 
-    def continue_task(self):  # for now assume tasks are only of type Move
+    def continue_task(
+        self, board: List[float]
+    ) -> Move:  # for now assume tasks are only of type Move
         if self.tasks:
             task = self.tasks[0]
             self.tasks = self.tasks[1:]
+            if task.value is None:
+                self.collect(board)
+                return Move.COLLECT
             if task in Move:
                 self.move(task)
                 return task
             raise TypeError
         raise ValueError
 
-    def navigate_to_pos(self, pos):
+    def navigate_to_pos(self, pos: Position) -> None:
         direct_x = self.pos.x - pos.x
         border_x = (
             (self.pos.x + SIZE - pos.x) if self.pos.x < pos.x else (self.pos.x - (pos.x + SIZE))
@@ -104,6 +118,15 @@ class Ship:
             for _ in range(abs(delta_y)):
                 self.tasks.append(Move.WEST)
 
+    def collect_in_local_cluster(
+        self, halite_matrix: List[float], cluster_size: int
+    ) -> bool:  # should later be a good collection algorithm.
+        for _ in range(cluster_size ** 2):
+            move = choice(list(Move))
+            task = choice([move, Move.COLLECT])
+            self.add_task(task)
+        return True
+
     def __str__(self):
         return f"Ship(name={self.name}, pos={self.pos}, task={self.tasks}, halite={self.halite}"
 
@@ -115,7 +138,7 @@ class Ship:
 
 
 class Shipyard:
-    def __init__(self, name, pos):
+    def __init__(self, name: str, pos: Position):
         self.pos = pos
         self.name = name
         self.occupied = False
@@ -129,10 +152,10 @@ class Shipyard:
     def __eq__(self, other):
         return self.pos == other.pos
 
-    def set_occupied(self):
+    def set_occupied(self) -> None:
         self.occupied = True
 
-    def set_unoccupied(self):
+    def set_unoccupied(self) -> None:
         self.occupied = False
 
 
@@ -143,28 +166,28 @@ class Player:
         self.halite = 5000
         self.shipyards = dict()
 
-    def add_shipyard(self, name, pos):
+    def add_shipyard(self, name: str, pos: Position) -> None:
         self.shipyards[name] = Shipyard(name, pos)
         self.halite -= 2000
 
-    def add_ship(self, name, pos):
+    def add_ship(self, name: str, pos: Position) -> None:
         self.ships[name] = Ship(name, pos)
         self.halite -= 500
 
-    def remove_ship(self, name):
+    def remove_ship(self, name: str) -> None:
         if self.ships.get(name) is not None:
             del self.ships[name]
         else:
             raise KeyError
 
-    def convert_ship(self, ship_name, yard_name):
+    def convert_ship(self, ship_name: str, yard_name: str) -> None:
         if self.ships.get(ship_name) is not None:
             self.add_shipyard(yard_name, self.ships[ship_name].pos)
             self.remove_ship(ship_name)
         else:
             raise KeyError
 
-    def spawn_ship(self, yard_name, ship_name):
+    def spawn_ship(self, yard_name: str, ship_name: str) -> None:
         if self.shipyards.get(yard_name) is not None:
             shipyard = self.shipyards[yard_name]
             self.add_ship(ship_name, shipyard.pos)
@@ -172,7 +195,7 @@ class Player:
         else:
             raise KeyError
 
-    def set_occupations(self):
+    def set_occupations(self) -> None:
         occupied_positions = list(map(lambda x: x.pos, self.ships.values()))
 
         for shipyard in self.shipyards.values():
@@ -181,10 +204,10 @@ class Player:
             else:
                 shipyard.occupied = True
 
-    def all_ship_positions(self):
+    def all_ship_positions(self) -> List[Tuple[str, Position]]:
         return list(map(lambda x: (x.name, x.pos), self.ships.values()))
 
-    def crash_test(self):
+    def crash_test(self) -> bool:
         occupied = self.all_ship_positions()
         if len(set(occupied)) < len(occupied):
             return True
@@ -194,7 +217,7 @@ class Player:
 PLAYER = Player()
 
 
-def find_halite_cluster(halite_matrix, cluster_size):
+def find_halite_cluster(halite_matrix: np.ndarray, cluster_size: int) -> Position:
     best_top_left_pos = Position(0, 0)
     best_value = 0
     for x_ind in range(halite_matrix.shape[0] - cluster_size + 1):
@@ -202,7 +225,7 @@ def find_halite_cluster(halite_matrix, cluster_size):
             submatrix = halite_matrix[
                 x_ind : (x_ind + cluster_size), y_ind : (y_ind + cluster_size)
             ]
-            submatrix_value = sum(sum(submatrix))
+            submatrix_value = sum(sum(submatrix))  # type: ignore
             if submatrix_value > best_value:
                 best_value = submatrix_value
                 best_top_left_pos = Position(x_ind, y_ind)
@@ -212,7 +235,7 @@ def find_halite_cluster(halite_matrix, cluster_size):
     )
 
 
-def initialize(obs):
+def initialize(obs) -> None:
     shipyards = obs["players"][obs["player"]][1]
     for name, board_pos in shipyards.items():
         PLAYER.add_shipyard(name, board_pos_to_position(board_pos))
@@ -241,7 +264,7 @@ def first_agent(obs):
         logger.warning(ship)
 
     # convert random ship to shipyard
-    if PLAYER.ships and owned_halite > 4000:
+    if PLAYER.ships and owned_halite > 4000 and not PLAYER.shipyards:
         converted_ship_name = choice(list(PLAYER.ships))
         shipyard_name = f"{PLAYER.step+1}-{action_counter}"
         new_shipyard_names.add(shipyard_name)
@@ -255,12 +278,35 @@ def first_agent(obs):
         if ship_name in new_ship_names:
             continue
 
-        if random() < MOVE_PROB:  # move ship
-            ship_move = choice(list(Move))
-            action_dict[ship_name] = ship_move.value
-            ship.move(ship_move)
+        if ship.tasks:
+            task = ship.continue_task(board)
+
+        elif ship.halite < 500:
+            collects_locally = ship.collect_in_local_cluster(halite_matrix=board, cluster_size=5)
+            if collects_locally:
+                logger.warning("HERE HE COLLECTS\n\n")
+                task = ship.continue_task(board)
+            else:
+                cluster_center = find_halite_cluster(halite_matrix=board, cluster_size=5)
+                ship.navigate_to_pos(cluster_center)
+                if not ship.tasks:
+                    task = Move.COLLECT
+                else:
+                    task = ship.continue_task(board)
+
+        elif ship.halite > 2000:
+            ship.navigate_to_pos(list(PLAYER.shipyards.values())[0].pos)
+            task = ship.continue_task(board)
+
+        elif random() < MOVE_PROB:  # move ship
+            task = choice(list(Move))
+            ship.move(task)
         else:  # collect
+            task = Move.COLLECT
             ship.collect(board)
+
+        if task != Move.COLLECT:
+            action_dict[ship_name] = task.value
 
     PLAYER.set_occupations()
     # spawn ship in random shipyard when no ship in shipyard and no ship available

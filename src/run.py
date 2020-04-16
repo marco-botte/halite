@@ -4,11 +4,16 @@ from .agents.first_agent import first_agent
 from .utils import EXAMPLE_OBS, won_game_percentage
 
 
-def run_single_game():
+def run_single():
     env = make("halite", debug=True)
     env.render()
-    env.run(["src/agents/first_agent.py", None])
-    # env.run(["random", "random"])
+    env.run(["src/agents/single_ship_agent.py", None])
+
+
+def run_test():
+    env = make("halite", debug=True)
+    for _ in range(10):
+        env.run(["src/agents/single_ship_agent.py", None])
 
 
 def run_example_obs():
@@ -20,7 +25,7 @@ def run_evaluate():
         won_game_percentage(
             evaluate(
                 "halite",
-                ["src/agents/first_agent.py", "random"],
+                ["src/agents/single_ship_agent.py", "src/agents/single_ship_agent.py"],
                 num_episodes=10,
                 configuration={"agentExec": "LOCAL"},
             )

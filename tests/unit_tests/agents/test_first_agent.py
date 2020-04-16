@@ -80,6 +80,15 @@ def test_ship_add_task():
     assert ship.tasks[0] == task
 
 
+def test_ship_collect_in_local_cluster():
+    ship = Ship("GorchFock", Position(2, 4))
+    halite_matrix = np.reshape(np.float32([100] * 36), (6, 6))
+
+    collects_locally = ship.collect_in_local_cluster(halite_matrix, 3)
+
+    assert collects_locally is True
+
+
 def test_player_add_shipyard():
     player = Player()
     player.add_shipyard("Hamburg", Position(1, 1))
@@ -147,7 +156,7 @@ def test_continue_task():
     ship.add_task(task1)
     ship.add_task(Move.SOUTH)
 
-    assert ship.continue_task() == task1
+    assert ship.continue_task([]) == task1
 
 
 def test_navigate_to_pos():
@@ -167,7 +176,7 @@ def test_navigate_to_pos_over_border():
     assert ship.tasks == [Move.SOUTH] * 4 + [Move.WEST] * 6
 
     for _ in range(10):
-        ship.continue_task()
+        ship.continue_task([])
     assert ship.pos == target
 
 

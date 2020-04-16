@@ -4,6 +4,7 @@ SIZE = 15
 
 
 class RunCommand(Enum):
+    TEST = "test"
     SINGLE = "single"
     EVAL = "eval"
     EXAMPLE = "example"

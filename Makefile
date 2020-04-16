@@ -42,6 +42,10 @@ sort_import:
 sort_import_check:
 	pipenv run isort -rc . -c
 
+.PHONY: run_test
+run_test:
+	pipenv run python main.py test
+
 .PHONY: run_single
 run_single:
 	pipenv run python main.py single
